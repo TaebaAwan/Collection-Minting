@@ -8,14 +8,14 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 contract MintingNFT is ERC721, ERC721URIStorage {
     using SafeMath for uint;
 
-address owner; 
-mapping(address => uint) balances;
+address public owner; 
+mapping(address => uint) _balances;
 
 constructor() ERC721("MintingNFT", "IECT") 
     {
         owner = msg.sender;
-        uint _totalMintingLimit = 50; 
-        balances[owner]= _totalMintingLimit;
+        totalMintingLimit= 50;
+        _balances[owner]= totalMintingLimit;
     }
     bool _pause;
 
@@ -37,7 +37,7 @@ modifier paused(){   //No one can mint the NFT if the owner has paused the minti
 
 function balanceOf(address _owner) public view virtual override returns (uint256) {
         require(_owner != address(0), "ERC721: address zero is not a valid owner");
-        return balances[owner];
+        return _balances[_owner];
     } 
 
 modifier onlyOwner(){   
@@ -74,9 +74,10 @@ struct nftInfo{
 
 mapping (uint => nftInfo ) public nftData;
 
+    uint public totalMintingLimit;
     uint public whitelisMintingLimit= 20 ;
     uint public platformLimit = 10;
-    uint public publicMintingLimit = 20 ;
+    uint public publicMintingLimit = 20  ;
     uint public maxMintingLimit = 5 ;
 
 modifier onlyWhitelistedUsers(address userID) {
@@ -127,7 +128,7 @@ function whitelistMinting(address to, uint tokenId, string memory _name, string 
         require(totalNFTsMintedByWhitelistMiners < whitelisMintingLimit, "Max Whitelist minitinng limit has exceeded"); 
         require(whitelistUsers[to].nftminted < maxMintingLimit, "You have exceeded the minting limit"); 
         require(to != address(0), "Token can not be minted to a zero address");
-        balances[to] = whitelistUsers[to].nftminted;
+        _balances[to] = whitelistUsers[to].nftminted;
         _safeMint(to, tokenId);
          
          emit Minted (to, tokenId);
@@ -144,7 +145,7 @@ function platformMinting( address to, uint tokenId, string memory _name, string 
         require(totalNFTsMintedByPlatformMiners < platformLimit, "Max Public minitinng limit has exceeded"); 
         require(platformMiners[to].nftminted < maxMintingLimit, "You have exceeded the minting limit"); 
         require(to != address(0), "Token can not be minted to a zero address");
-        balances[to] = platformMiners[to].nftminted;
+        _balances[to] = platformMiners[to].nftminted;
         _safeMint(to, tokenId);
             emit Minted (to, tokenId);
         nftData[tokenId] = nftInfo(tokenId, _name, hash);
@@ -191,8 +192,8 @@ function publicMinting(address to, string memory _name, uint _nftsminted, bool _
         _safeMint(to, tokenId);
         emit Minted (to, tokenId);
 
-        balances[to] = whitelistUsers[to].nftminted++;
-        balances[to] = publicUsers[to].nftminted++;
+        _balances[to] = whitelistUsers[to].nftminted++;
+        _balances[to] = publicUsers[to].nftminted++;
 
         nftData[tokenId] = nftInfo( tokenId, tokenName, hash);
         totalNFTsMintedByPublicMiners++; 
@@ -205,8 +206,8 @@ function publicMinting(address to, string memory _name, uint _nftsminted, bool _
     _safeMint(to, tokenId);
     emit Minted (to, tokenId);
 
-    balances[to] = whitelistUsers[to].nftminted++;
-    balances[to] = publicUsers[to].nftminted++;
+    _balances[to] = whitelistUsers[to].nftminted++;
+    _balances[to] = publicUsers[to].nftminted++;
 
     nftData[tokenId] = nftInfo( tokenId, tokenName, hash);
     totalNFTsMintedByPublicMiners++; 
