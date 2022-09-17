@@ -1,0 +1,28 @@
+{
+  "description": "It's not certain that the winner always wins", 
+  "image": "https://ipfs.io/ipfs/QmNyfgbJdwdPF2J1RZquMEBHLs4EVtyccfX28TFYVdjhjU", 
+  "name": "Ace",
+   "attributes": [
+    {
+      "trait_type": "Red", 
+      "value": "Heart"
+    }, 
+    {
+      "trait_type": "Card", 
+      "value": "Paint"
+    }, 
+    {
+      "trait_type": "Club", 
+      "value": "Super"
+    }, 
+    {
+      "trait_type": "Painting", 
+      "value": "Adds value to your intimate places"
+    },
+    {
+      "trait_type": "Passion", 
+      "value": "Enthusiasm"
+    }
+   
+  ]
+}
