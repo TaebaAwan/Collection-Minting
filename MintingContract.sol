@@ -21,27 +21,17 @@ constructor() ERC721("MintingNFT", "IECT")
 
     event Minted(address indexed _to, uint256 indexed _tokenId);
 
-  function pauseContract() public onlyOwner {
+  function pauseContract() public onlyOwner{ 
       _pause = true;
     }
 
-     function unpauseContract() public onlyOwner {
+    function unpauseContract() public onlyOwner {
       _pause = false;
     }
     
 modifier paused(){   //No one can mint the NFT if the owner has paused the minting
     require(owner == msg.sender, "You are not the owner of this contract"); 
     require(_pause == false, "The minting is paused by the owner"); 
- _; }
-
-
-function balanceOf(address _owner) public view virtual override returns (uint256) {
-        require(_owner != address(0), "ERC721: address zero is not a valid owner");
-        return _balances[_owner];
-    } 
-
-modifier onlyOwner(){   
-    require(owner == msg.sender, "You are not the owner of this contract"); 
  _; }
 
 struct whitelistUSERS{
@@ -119,39 +109,6 @@ uint public totalPlatformMiners = 0;
         platformMiners[_platformMiner]= platformAdmin( _name, _nftsminted, _exists);
         totalPlatformMiners++;
 }
-
-uint totalNFTsMintedByWhitelistMiners =0;
-
-function whitelistMinting(address to, uint tokenId, string memory _name, string memory hash)
- public paused publicSaleNOTActive {
-        require(whitelistUsers[to].exists == true , "You are not registered");
-        require(totalNFTsMintedByWhitelistMiners < whitelisMintingLimit, "Max Whitelist minitinng limit has exceeded"); 
-        require(whitelistUsers[to].nftminted < maxMintingLimit, "You have exceeded the minting limit"); 
-        require(to != address(0), "Token can not be minted to a zero address");
-        _balances[to] = whitelistUsers[to].nftminted;
-        _safeMint(to, tokenId);
-         
-         emit Minted (to, tokenId);
-
-        nftData[tokenId] = nftInfo( tokenId, _name, hash);
-        totalNFTsMintedByWhitelistMiners++;
-}
-
-uint totalNFTsMintedByPlatformMiners =0;
-
-function platformMinting( address to, uint tokenId, string memory _name, string memory hash)
- public paused onlyOwner {
-      require(platformMiners[to].exists == true , "You are not registered");
-        require(totalNFTsMintedByPlatformMiners < platformLimit, "Max Public minitinng limit has exceeded"); 
-        require(platformMiners[to].nftminted < maxMintingLimit, "You have exceeded the minting limit"); 
-        require(to != address(0), "Token can not be minted to a zero address");
-        _balances[to] = platformMiners[to].nftminted;
-        _safeMint(to, tokenId);
-            emit Minted (to, tokenId);
-        nftData[tokenId] = nftInfo(tokenId, _name, hash);
-        totalNFTsMintedByPlatformMiners++;
-}
-
 bool publicSale;
 
 function activatePublicSale() public onlyOwner {
@@ -173,6 +130,38 @@ modifier publicSaleActive(){
 modifier publicSaleNOTActive(){   
     require(publicSale == false, "The public sale has started! You can not mint the NFT"); 
  _; }
+
+uint totalNFTsMintedByWhitelistMiners =0;
+
+function whitelistMinting(address to, uint tokenId, string memory _name, string memory hash)
+ public paused publicSaleNOTActive {
+        require(to != address(0), "Token can not be minted to a zero address");
+        require(whitelistUsers[to].exists == true , "You are not registered");
+        require(totalNFTsMintedByWhitelistMiners < whitelisMintingLimit, "Max Whitelist minitinng limit has exceeded"); 
+        require(whitelistUsers[to].nftminted < maxMintingLimit, "You have exceeded the minting limit"); 
+        _balances[to] = whitelistUsers[to].nftminted++;
+        _safeMint(to, tokenId);
+         
+         emit Minted (to, tokenId);
+
+        nftData[tokenId] = nftInfo( tokenId, _name, hash);
+        totalNFTsMintedByWhitelistMiners++;
+}
+
+uint totalNFTsMintedByPlatformMiners =0;
+
+function platformMinting( address to, uint tokenId, string memory _name, string memory hash)
+ public paused onlyOwner {
+        require(to != address(0), "Token can not be minted to a zero address");
+        require(platformMiners[to].exists == true , "You are not registered");
+        require(totalNFTsMintedByPlatformMiners < platformLimit, "Max Public minitinng limit has exceeded"); 
+        require(platformMiners[to].nftminted < maxMintingLimit, "You have exceeded the minting limit"); 
+        _balances[to] = platformMiners[to].nftminted++;
+        _safeMint(to, tokenId);
+            emit Minted (to, tokenId);
+        nftData[tokenId] = nftInfo(tokenId, _name, hash);
+        totalNFTsMintedByPlatformMiners++;
+}
 
     uint totalNFTsMintedByPublicMiners =0;
     uint public totalPublicUsers = 0;
@@ -224,6 +213,14 @@ function publicMinting(address to, string memory _name, uint _nftsminted, bool _
 
     // The following functions are overrides required by Solidity.
 
+function balanceOf(address _owner) public view virtual override returns (uint256) {
+        require(_owner != address(0), "ERC721: address zero is not a valid owner");
+        return _balances[_owner];
+    } 
+
+modifier onlyOwner(){   
+    require(owner == msg.sender, "You are not the owner of this contract"); 
+ _; }
     function supportsInterface() internal view virtual  {
     
     }
@@ -236,3 +233,7 @@ function publicMinting(address to, string memory _name, uint _nftsminted, bool _
         require(_exists(tokenId), "ERC721: invalid token ID");
     }
 }
+
+// https://ipfs.io/ipfs/
+// https://testnets.opensea.io/collection/nft-art-exhibition
+// https://testnets.opensea.io/assets/0xE07d31F686e982463A43F557182513982887CAd1/1
