@@ -21,6 +21,12 @@ constructor() ERC721("MintingNFT", "IECT")
 
     event Minted(address indexed _to, uint256 indexed _tokenId);
 
+/**
+     * @dev pauseContract is used to pause all the functions of the contract.
+     * @dev unpauseContract is used to unpause all the functions of the contract.
+     * Requirement:
+     * - This function can only called by the owner of the contract.
+*/
   function pauseContract() public onlyOwner{ 
       _pause = true;
     }
@@ -76,6 +82,14 @@ modifier onlyWhitelistedUsers(address userID) {
 
 string baseURI; 
 
+ /**
+     * @dev _baseURI is used to set the baseURI of NFT.
+     * @dev updateBaseURI is used to update the baseURI of NFT.
+     * Requirement:
+     * - This function can only called by the registered whitelist admins.
+     * - This function cannot be called if the contract is paused.
+     * @param baseuri - baseuri
+*/
 function _baseURI(string memory baseuri) public virtual paused onlyWhitelistedUsers(msg.sender) 
 returns (string memory) {
       baseURI = baseuri;
@@ -85,7 +99,13 @@ returns (string memory) {
 function updateBaseURI(string memory baseuri) public virtual onlyWhitelistedUsers(msg.sender) paused {
         baseURI = baseuri;
     }
-
+/**
+     * @dev addWhitelistAdmins is used to register a whitelist admin.
+     * @dev removeWhitelistAdmins is used to remove a registered whitelist admin.
+     * Requirement:
+     * - This function can only called by the owner of the contract.
+     * - This function cannot be called if the contract is paused.
+*/
 uint public totalWhitelistUsers=0;
 
     function addWhitelistAdmins(address _whitelistUser, string memory _name, uint _nftsminted, bool _exists) 
@@ -100,8 +120,12 @@ uint public totalWhitelistUsers=0;
         delete whitelistUsers[_whitelistUser];
         totalWhitelistUsers--;
 }
-
 uint public totalPlatformMiners = 0;
+/**
+     * @dev addPlatformMiners is used to register a Platform Miner.
+     * Requirement:
+     * - This function cannot be called if the contract is paused.
+*/
 
     function addPlatformMiners(address _platformMiner, string memory _name, uint _nftsminted, bool _exists) 
     public paused  {
@@ -111,20 +135,22 @@ uint public totalPlatformMiners = 0;
 }
 bool publicSale;
 
+/**
+     * @dev activatePublicSale is used to activate the public sale of NFTs.
+     * - This function can only called by the owner of the contract.
+     * - As soon as the public sale will be activated all the remaining Whitelist Admins minting limit 
+     will be transferred to public minting limit.
+*/
 function activatePublicSale() public onlyOwner {
         publicSale = true;    
-}
-
-function deactivatePublicSale() public onlyOwner {
-        publicSale = false;   
+        if(totalNFTsMintedByWhitelistMiners < whitelisMintingLimit) {
+        uint unusedTokens = whitelisMintingLimit - totalNFTsMintedByWhitelistMiners;
+        publicMintingLimit += unusedTokens;
+     }
 }
 
 modifier publicSaleActive(){   
     require(publicSale == true, "The public sale has ended! You can not mint the NFT"); 
-    if(totalNFTsMintedByWhitelistMiners < whitelisMintingLimit) {
-        uint unusedTokens = whitelisMintingLimit - totalNFTsMintedByWhitelistMiners;
-        publicMintingLimit += unusedTokens;
-     }
  _; }
 
 modifier publicSaleNOTActive(){   
@@ -132,7 +158,13 @@ modifier publicSaleNOTActive(){
  _; }
 
 uint totalNFTsMintedByWhitelistMiners =0;
-
+ /**
+     * @dev whitelistMinting is used to let whitelist miners mint NFTs.
+     * Requirement:
+     * - This function can only called if the public sale is not active.
+     * - This function cannot be called if the contract is paused.
+     * @param to - to, tokenId -tokenId, _name - _name, hash- hash
+*/
 function whitelistMinting(address to, uint tokenId, string memory _name, string memory hash)
  public paused publicSaleNOTActive {
         require(to != address(0), "Token can not be minted to a zero address");
@@ -149,7 +181,12 @@ function whitelistMinting(address to, uint tokenId, string memory _name, string 
 }
 
 uint totalNFTsMintedByPlatformMiners =0;
-
+ /**
+     * @dev platformMinting is used to let platform miners mint NFTs.
+     * Requirement:
+     * - This function cannot be called if the contract is paused.
+     * @param to - to, tokenId -tokenId, _name - _name, hash- hash
+*/
 function platformMinting( address to, uint tokenId, string memory _name, string memory hash)
  public paused onlyOwner {
         require(to != address(0), "Token can not be minted to a zero address");
@@ -165,7 +202,14 @@ function platformMinting( address to, uint tokenId, string memory _name, string 
 
     uint totalNFTsMintedByPublicMiners =0;
     uint public totalPublicUsers = 0;
-
+ /**
+     * @dev publicMinting is used to let public miners & whitelist miner mint NFTs.
+     * Requirement:
+     * - This function can only called if the public sale is active.
+     * - This function cannot be called if the contract is paused.
+     * @param to - to, tokenId -tokenId, tokenName- tokenName, _name - _name, _exists- _exists, 
+     hash- hash, _nftsminted - _nftsminted
+*/
 function publicMinting(address to, string memory _name, uint _nftsminted, bool _exists,
     uint tokenId, string memory tokenName, string memory hash) 
     public paused publicSaleActive {
@@ -236,4 +280,3 @@ modifier onlyOwner(){
 
 // https://ipfs.io/ipfs/
 // https://testnets.opensea.io/collection/nft-art-exhibition
-// https://testnets.opensea.io/assets/0xE07d31F686e982463A43F557182513982887CAd1/1
